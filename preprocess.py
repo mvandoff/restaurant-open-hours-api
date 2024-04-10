@@ -1,11 +1,9 @@
 import csv
 from pprint import pprint
 import re
-from typing import Union
-from enum import Enum
 
-# Day = Enum("Day", ["Sun", "Mon", "Tues", "Wed", "Thu", "Fri", "Sat"])
-# ParsedHours = dict[Day, Union[tuple[int, int], None]]
+from IntervalTreeNode import build_interval_tree_from_sorted_list
+from data_types import ParsedRestaurant
 
 dayIndexes = {
     "Mon": 0,
@@ -19,7 +17,7 @@ dayIndexes = {
 
 
 def load_restaurant_data():
-    days = [[], [], [], [], [], [], []]
+    days: list[list[ParsedRestaurant]] = [[], [], [], [], [], [], []]
 
     with open("restaurants.csv", "r") as file:
         reader = csv.reader(file)
@@ -30,6 +28,7 @@ def load_restaurant_data():
             # Split the hours string on '/' or ',' and strip the whitespace
             hours_split = [x.strip() for x in re.split(r"[/,]+", all_hours)]
 
+            # Parse the hours
             for hours_segment in hours_split:
                 hours_segment_list = hours_segment.split(" ")
                 day_or_day_range = hours_segment_list[0]
@@ -44,12 +43,29 @@ def load_restaurant_data():
                     days[i].append(
                         {
                             # Append a "*" to the name if the restaurant times are unknown for that day
-                            "name": name if len(times) > 0 else name + "*",
+                            "names": [name] if len(times) > 0 else [name + "*"],
                             "times": parse_and_serialize_times(times),
                         }
                     )
 
-    pprint(days)
+    # Sort the lists of restaurants by their start times
+    for day in days:
+        day.sort(key=lambda x: x["times"][0])
+
+    # Merge any restaurants with the same start and end times
+    for day in days:
+        i = 0
+        while i < len(day) - 1:
+            if day[i]["times"] == day[i + 1]["times"]:
+                day[i]["names"] += day[i + 1]["names"]
+                del day[i + 1]
+            else:
+                i += 1
+
+    # pprint(days[4])
+
+    # Build an interval tree for each day
+    return [build_interval_tree_from_sorted_list(day) for day in days]
 
 
 # Parses the times list and returns a tuple of (start_time, end_time)
@@ -91,6 +107,3 @@ def parse_and_serialize_times(times: list[str]) -> tuple[int, int]:
         start_time_hours * 60 + start_time_minutes,
         end_time_hours * 60 + end_time_minutes,
     )
-
-
-load_restaurant_data()

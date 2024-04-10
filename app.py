@@ -1,10 +1,16 @@
 import json
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from pprint import pprint
 from urllib.parse import urlparse, parse_qs
+
+from preprocess import load_restaurant_data
+from query import get_open_restaurants
 
 
 class RequestHandler(BaseHTTPRequestHandler):
+    day_trees = load_restaurant_data()
+
     def do_GET(self):
         parsed_url = urlparse(self.path)
         if parsed_url.path == "/restaurants/open":
@@ -13,8 +19,8 @@ class RequestHandler(BaseHTTPRequestHandler):
             if date_time_str:
                 try:
                     date_time = datetime.strptime(date_time_str, "%Y-%m-%d %H:%M:%S")
-                    open_restaurants = []
-                    response = open_restaurants
+                    response = get_open_restaurants(date_time, RequestHandler.day_trees)
+
                     self.send_response(200)
                     self.send_header("Content-Type", "application/json")
                     self.end_headers()
