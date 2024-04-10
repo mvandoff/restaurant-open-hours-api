@@ -16,10 +16,10 @@ dayIndexes = {
 }
 
 
-def load_restaurant_data():
+def load_restaurant_data(path_to_csv: str):
     days: list[list[ParsedRestaurant]] = [[], [], [], [], [], [], []]
 
-    with open("restaurants.csv", "r") as file:
+    with open(path_to_csv, "r") as file:
         reader = csv.reader(file)
         next(reader)  # Skip the header row
         for row in reader:

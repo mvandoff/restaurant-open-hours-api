@@ -9,7 +9,7 @@ from query import get_open_restaurants
 
 
 class RequestHandler(BaseHTTPRequestHandler):
-    day_trees = load_restaurant_data()
+    day_trees = load_restaurant_data("restaurants.csv")
 
     def do_GET(self):
         parsed_url = urlparse(self.path)

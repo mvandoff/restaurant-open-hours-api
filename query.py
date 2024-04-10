@@ -12,11 +12,11 @@ def get_open_restaurants(
     # Get the number of minutes into the day
     minutes_into_day = date_time.hour * 60 + date_time.minute
 
-    return search_interval_tree(minutes_into_day, trees[day_of_week])
+    return search_interval_tree(minutes_into_day, trees[day_of_week], [])
 
 
 def search_interval_tree(
-    time: int, tree: Union[IntervalTreeNode, None], restaurants=[]
+    time: int, tree: Union[IntervalTreeNode, None], restaurants: list[str]
 ) -> list[str]:
     if tree is None:
         return restaurants
