@@ -10,7 +10,7 @@ class TestGetOpenRestaurants(unittest.TestCase):
         """
         Returns every restaurant when all are open
         """
-        day_trees = load_restaurant_data("tests/tests_get_open_restaurants.csv")
+        day_trees = load_restaurant_data("test_data/tests_get_open_restaurants.csv")
         date_time_str = "2024-04-21 18:00:00"  # Sunday, everything open
         date_time = datetime.strptime(date_time_str, "%Y-%m-%d %H:%M:%S")
 
@@ -21,7 +21,7 @@ class TestGetOpenRestaurants(unittest.TestCase):
         """
         Returns an empty list when no restaurants are open
         """
-        day_trees = load_restaurant_data("tests/tests_get_open_restaurants.csv")
+        day_trees = load_restaurant_data("test_data/tests_get_open_restaurants.csv")
         date_time_str = "2024-04-20 9:00:00"  # Saturday, everything closed
         date_time = datetime.strptime(date_time_str, "%Y-%m-%d %H:%M:%S")
 
@@ -32,7 +32,7 @@ class TestGetOpenRestaurants(unittest.TestCase):
         """
         Returns a list of open restaurants when some are closed
         """
-        day_trees = load_restaurant_data("tests/tests_get_open_restaurants.csv")
+        day_trees = load_restaurant_data("test_data/tests_get_open_restaurants.csv")
         date_time_str = "2024-04-15 12:00:00"  # Monday, Garland and Bonchon closed
         date_time = datetime.strptime(date_time_str, "%Y-%m-%d %H:%M:%S")
 
@@ -44,7 +44,7 @@ class TestGetOpenRestaurants(unittest.TestCase):
         Returns a list of open restaurants when some have unknown hours.
         Restaurants with unknown hours should have a "*" appended to their name.
         """
-        day_trees = load_restaurant_data("tests/tests_get_open_restaurants.csv")
+        day_trees = load_restaurant_data("test_data/tests_get_open_restaurants.csv")
         date_time_str = "2024-04-15 12:00:00"
         date_time = datetime.strptime(date_time_str, "%Y-%m-%d %H:%M:%S")
 
@@ -55,7 +55,7 @@ class TestGetOpenRestaurants(unittest.TestCase):
         """
         Returns a list of open restaurants when the time is after midnight
         """
-        day_trees = load_restaurant_data("tests/tests_get_open_restaurants.csv")
+        day_trees = load_restaurant_data("test_data/tests_get_open_restaurants.csv")
         date_time_str = "2024-04-20 23:30:00"  # Saturday, Bonchon open until 1:30am
 
         date_time = datetime.strptime(date_time_str, "%Y-%m-%d %H:%M:%S")
@@ -67,7 +67,7 @@ class TestGetOpenRestaurants(unittest.TestCase):
         """
         Returns a list of open restaurants when the time is after midnight and the restaurant closes the next day
         """
-        day_trees = load_restaurant_data("tests/tests_get_open_restaurants.csv")
+        day_trees = load_restaurant_data("test_data/tests_get_open_restaurants.csv")
         date_time_str = "2024-04-21 1:00:00"
 
         date_time = datetime.strptime(date_time_str, "%Y-%m-%d %H:%M:%S")
