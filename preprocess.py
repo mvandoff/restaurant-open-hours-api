@@ -1,18 +1,25 @@
 import csv
 import re
-from pprint import pprint
 from datetime import datetime, timedelta
+from typing import TypedDict, Union
 
-from IntervalTreeNode import build_interval_tree_from_sorted_list
+from IntervalTreeNode import IntervalTreeNode, build_interval_tree_from_sorted_list
 from data_types import ParsedRestaurant
 
 dayIndexes = {"Mon": 0, "Tues": 1, "Wed": 2, "Thu": 3, "Fri": 4, "Sat": 5, "Sun": 6}
 
-# TODO: Dont add restaurants that are closed for the entire day to the tree
+RestaurantData = TypedDict(
+    "RestaurantData",
+    {
+        "trees": list[Union[IntervalTreeNode, None]],
+        "unknown_times_restaurant_names": list[list[str]],
+    },
+)
 
 
-def load_restaurant_data(path_to_csv: str):
-    days: list[list[ParsedRestaurant]] = [[], [], [], [], [], [], []]
+def load_restaurant_data(path_to_csv: str) -> RestaurantData:
+    days_list: list[list[ParsedRestaurant]] = [[], [], [], [], [], [], []]
+    unknown_times_restaurant_names: list[list[str]] = [[], [], [], [], [], [], []]
 
     with open(path_to_csv, "r") as file:
         reader = csv.reader(file)
@@ -35,14 +42,8 @@ def load_restaurant_data(path_to_csv: str):
                 end_day = dayIndexes[day_range[1]] if len(day_range) > 1 else start_day
 
                 for day_index in range(start_day, end_day + 1):
-                    # TODO: Handle restaurants that are closed for the entire day and remove this
                     if len(times) == 0:
-                        days[day_index].append(
-                            {
-                                "names": [name + "*"],
-                                "times": (0, 1439),
-                            }
-                        )
+                        unknown_times_restaurant_names[day_index].append(name + "*")
                         continue
 
                     start_datetime, end_datetime = parse_times(times)
@@ -53,7 +54,7 @@ def load_restaurant_data(path_to_csv: str):
                     )
                     end_minutes = minutes_between(start_datetime, end_datetime)
 
-                    days[day_index].append(
+                    days_list[day_index].append(
                         {
                             # Append a "*" to the name if the restaurant times are unknown for that day
                             "names": [name],
@@ -68,7 +69,7 @@ def load_restaurant_data(path_to_csv: str):
 
                     # Some restaurants are open past midnight, so we need to add them to the next day
                     if end_datetime < start_datetime:
-                        days[(day_index + 1) % 7].append(
+                        days_list[(day_index + 1) % 7].append(
                             {
                                 "names": [name],
                                 "times": (
@@ -82,11 +83,11 @@ def load_restaurant_data(path_to_csv: str):
                         )
 
     # Sort the lists of restaurants by their start times
-    for day in days:
+    for day in days_list:
         day.sort(key=lambda x: x["times"][0])
 
     # Merge any restaurants with the same start and end times
-    for day in days:
+    for day in days_list:
         day_index = 0
         while day_index < len(day) - 1:
             if day[day_index]["times"] == day[day_index + 1]["times"]:
@@ -96,7 +97,10 @@ def load_restaurant_data(path_to_csv: str):
                 day_index += 1
 
     # Build an interval tree for each day
-    return [build_interval_tree_from_sorted_list(day) for day in days]
+    return {
+        "trees": [build_interval_tree_from_sorted_list(day) for day in days_list],
+        "unknown_times_restaurant_names": unknown_times_restaurant_names,
+    }
 
 
 def minutes_between(start_datetime: datetime, end_datetime: datetime) -> int:
@@ -131,6 +135,3 @@ def parse_times(times: list[str]) -> tuple[datetime, datetime]:
     )
 
     return (start_datetime, end_datetime)
-
-
-trees = load_restaurant_data("restaurants.csv")

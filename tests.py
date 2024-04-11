@@ -72,7 +72,6 @@ class TestGetOpenRestaurants(unittest.TestCase):
 
         date_time = datetime.strptime(date_time_str, "%Y-%m-%d %H:%M:%S")
         response = get_open_restaurants(date_time, day_trees)
-        print("response", response)
         self.assertTrue("Bonchon" in response)
 
 

@@ -1,5 +1,4 @@
 from __future__ import annotations
-from pprint import pprint
 from typing import Union
 
 from data_types import ParsedRestaurant

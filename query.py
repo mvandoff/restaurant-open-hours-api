@@ -1,18 +1,23 @@
 from datetime import datetime
 from typing import Union
 from IntervalTreeNode import IntervalTreeNode
-from preprocess import load_restaurant_data
+from preprocess import RestaurantData, load_restaurant_data
 
 
 def get_open_restaurants(
-    date_time: datetime, trees: list[IntervalTreeNode | None]
+    date_time: datetime, restaurant_data: RestaurantData
 ) -> list[str]:
     # Get the day of the week (0 is Monday, 6 is Sunday)
     day_of_week = date_time.weekday()
     # Get the number of minutes into the day
     minutes_into_day = date_time.hour * 60 + date_time.minute
 
-    return search_interval_tree(minutes_into_day, trees[day_of_week], [])
+    return (
+        search_interval_tree(
+            minutes_into_day, restaurant_data["trees"][day_of_week], []
+        )
+        + restaurant_data["unknown_times_restaurant_names"][day_of_week]
+    )
 
 
 def search_interval_tree(
@@ -31,10 +36,3 @@ def search_interval_tree(
         search_interval_tree(time, tree.right, restaurants)
 
     return restaurants
-
-
-# trees = load_restaurant_data()
-# date_time_str = "2024-04-12 9:11:11"
-# date_time = datetime.strptime(date_time_str, "%Y-%m-%d %H:%M:%S")
-# response = get_open_restaurants(date_time, trees)
-# print(response)

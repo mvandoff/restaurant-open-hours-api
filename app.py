@@ -9,7 +9,7 @@ from query import get_open_restaurants
 
 
 class RequestHandler(BaseHTTPRequestHandler):
-    day_trees = load_restaurant_data("restaurants.csv")
+    restaurant_data = load_restaurant_data("restaurants.csv")
 
     def do_GET(self):
         parsed_url = urlparse(self.path)
@@ -19,7 +19,9 @@ class RequestHandler(BaseHTTPRequestHandler):
             if date_time_str:
                 try:
                     date_time = datetime.strptime(date_time_str, "%Y-%m-%d %H:%M:%S")
-                    response = get_open_restaurants(date_time, RequestHandler.day_trees)
+                    response = get_open_restaurants(
+                        date_time, RequestHandler.restaurant_data
+                    )
 
                     self.send_response(200)
                     self.send_header("Content-Type", "application/json")
