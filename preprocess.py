@@ -1,19 +1,14 @@
 import csv
-from pprint import pprint
 import re
+from pprint import pprint
+from datetime import datetime
 
 from IntervalTreeNode import build_interval_tree_from_sorted_list
 from data_types import ParsedRestaurant
 
-dayIndexes = {
-    "Mon": 0,
-    "Tues": 1,
-    "Wed": 2,
-    "Thu": 3,
-    "Fri": 4,
-    "Sat": 5,
-    "Sun": 6,
-}
+dayIndexes = {"Mon": 0, "Tues": 1, "Wed": 2, "Thu": 3, "Fri": 4, "Sat": 5, "Sun": 6}
+
+# TODO: Dont add restaurants that are closed for the entire day to the tree
 
 
 def load_restaurant_data(path_to_csv: str):
@@ -39,8 +34,8 @@ def load_restaurant_data(path_to_csv: str):
                 start_day = dayIndexes[day_range[0]]
                 end_day = dayIndexes[day_range[1]] if len(day_range) > 1 else start_day
 
-                for i in range(start_day, end_day + 1):
-                    days[i].append(
+                for day_index in range(start_day, end_day + 1):
+                    days[day_index].append(
                         {
                             # Append a "*" to the name if the restaurant times are unknown for that day
                             "names": [name] if len(times) > 0 else [name + "*"],
@@ -48,24 +43,37 @@ def load_restaurant_data(path_to_csv: str):
                         }
                     )
 
+                    # Some restaurants are open past midnight, so we need to add them to the next day
+
     # Sort the lists of restaurants by their start times
     for day in days:
         day.sort(key=lambda x: x["times"][0])
 
     # Merge any restaurants with the same start and end times
     for day in days:
-        i = 0
-        while i < len(day) - 1:
-            if day[i]["times"] == day[i + 1]["times"]:
-                day[i]["names"] += day[i + 1]["names"]
-                del day[i + 1]
+        day_index = 0
+        while day_index < len(day) - 1:
+            if day[day_index]["times"] == day[day_index + 1]["times"]:
+                day[day_index]["names"] += day[day_index + 1]["names"]
+                del day[day_index + 1]
             else:
-                i += 1
-
-    # pprint(days[4])
+                day_index += 1
 
     # Build an interval tree for each day
     return [build_interval_tree_from_sorted_list(day) for day in days]
+
+
+def minutes_between(start_datetime: datetime, end_datetime: datetime) -> int:
+    """
+    Calculates the number of minutes between two times.
+    """
+    # If end time is earlier than start time, assume it's the next day
+    if end_datetime < start_datetime:
+        end_datetime = end_datetime.replace(day=end_datetime.day + 1)
+
+    time_diff = end_datetime - start_datetime
+    minutes = int(time_diff.total_seconds() // 60)
+    return minutes
 
 
 # Parses the times list and returns a tuple of (start_time, end_time)
@@ -76,34 +84,27 @@ def parse_and_serialize_times(times: list[str]) -> tuple[int, int]:
     [start_time, start_am_pm, _, end_time, end_am_pm] = times
 
     start_time_hours_and_minutes = start_time.split(":")
-    start_time_hours = (
-        0
-        if start_time_hours_and_minutes[0] == "12" and start_am_pm == "am"
-        else int(start_time_hours_and_minutes[0])
-    )
-    start_time_minutes = (
-        int(start_time_hours_and_minutes[1])
-        if len(start_time_hours_and_minutes) > 1
-        else 0
-    )
 
-    if start_am_pm == "pm":
-        start_time_hours += 12
+    start_datetime = datetime.strptime(
+        f"{start_time_hours_and_minutes[0]}:{'00' if len(start_time_hours_and_minutes) == 1 else start_time_hours_and_minutes[1]} {start_am_pm.upper()}",
+        "%I:%M %p",
+    )
 
     end_time_hours_and_minutes = end_time.split(":")
-    end_time_hours = (
-        0
-        if end_time_hours_and_minutes[0] == "12" and end_am_pm == "am"
-        else int(end_time_hours_and_minutes[0])
-    )
-    end_time_minutes = (
-        int(end_time_hours_and_minutes[1]) if len(end_time_hours_and_minutes) > 1 else 0
+    end_datetime = datetime.strptime(
+        f"{end_time_hours_and_minutes[0]}:{'00' if len(end_time_hours_and_minutes) == 1 else end_time_hours_and_minutes[1]} {end_am_pm.upper()}",
+        "%I:%M %p",
     )
 
-    if end_am_pm == "pm":
-        end_time_hours += 12
+    start_minutes = minutes_between(
+        datetime.strptime("12:00 am", "%I:%M %p"), start_datetime
+    )
+    end_minutes = minutes_between(start_datetime, end_datetime)
 
     return (
-        start_time_hours * 60 + start_time_minutes,
-        end_time_hours * 60 + end_time_minutes,
+        start_minutes,
+        end_minutes + start_minutes,
     )
+
+
+trees = load_restaurant_data("restaurants.csv")
