@@ -76,8 +76,5 @@ class TestGetOpenRestaurants(unittest.TestCase):
         self.assertTrue("Bonchon" in response)
 
 
-# open after midnight needs to test starting on the next day as well
-
-
 if __name__ == "__main__":
     unittest.main()
