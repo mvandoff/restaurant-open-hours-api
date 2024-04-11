@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime
 from preprocess import load_restaurant_data
-from query import get_open_restaurants
+from search import get_open_restaurants
 
 
 # Tests the get_open_restaurants function

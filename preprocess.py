@@ -67,7 +67,7 @@ def load_restaurant_data(path_to_csv: str) -> RestaurantData:
                         }
                     )
 
-                    # Some restaurants are open past midnight, so we need to add them to the next day
+                    # Some restaurants are open past midnight, so we need to add them to the next day as well
                     if end_datetime < start_datetime:
                         days_list[(day_index + 1) % 7].append(
                             {
@@ -110,7 +110,7 @@ def minutes_between(start_datetime: datetime, end_datetime: datetime) -> int:
     """
     # Check if the end time is earlier than the start time (e.g., past midnight scenario)
     if end_datetime < start_datetime:
-        # Correctly handle the next day adjustment
+        # Add a day to the end time
         end_datetime += timedelta(days=1)
 
     time_diff = end_datetime - start_datetime

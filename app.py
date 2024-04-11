@@ -5,7 +5,7 @@ from pprint import pprint
 from urllib.parse import urlparse, parse_qs
 
 from preprocess import load_restaurant_data
-from query import get_open_restaurants
+from search import get_open_restaurants
 
 
 class RequestHandler(BaseHTTPRequestHandler):
